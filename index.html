@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>/* iPhone 防放大（全 App 統一，主任 2026-10-17）：iPhone／iPad 點輸入框不自動放大，兩指放大照常；Android 不加 maximum-scale（會連兩指放大都鎖掉） */
+(function(){var m=document.querySelector('meta[name=viewport]');if(m&&(/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))&&m.content.indexOf('maximum-scale')<0)m.content+=',maximum-scale=1';})();</script>
+<style>html,body,*{touch-action:manipulation}/* 連點兩下不放大，兩指放大照常 */</style>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#9e2a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="急救車">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>急救車管理</title>
+<style>
+:root{--pri:#9e2a2b;--pri-dark:#7a1f20;--bg:#f6f3f2;--card:#fff;--line:#e6dcda;--txt:#1f2d3d;--mut:#6f7781;
+  --ok:#1f8a4c;--okbg:#e6f5ec;--warn:#a85800;--warnbg:#fff4e0;--bad:#c0392b;--badbg:#fdecea;--yel:#8a6d00;--yelbg:#fff9db}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.55}
+button,input,select{font:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px}
+header.top{background:var(--pri);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header.top .wrap{padding-top:calc(10px + env(safe-area-inset-top));padding-bottom:10px}
+header.top h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.5px}
+main.wrap{padding-top:12px;padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+.mut{color:var(--mut)}
+.btn{border:1px solid var(--pri);background:var(--pri);color:#fff;border-radius:9px;padding:8px 14px;cursor:pointer;white-space:nowrap;font-size:15px}
+.btn:active{background:var(--pri-dark)}
+.btn.outline{background:#fff;color:var(--pri)}
+.btn.ghost{background:#fff;color:var(--mut);border-color:var(--line)}
+.btn.mini{font-size:13px;padding:3px 10px;border-radius:7px}
+.btn.big{font-size:19px;padding:15px 18px;border-radius:14px;width:100%;font-weight:700;letter-spacing:1px}
+.btn:disabled{opacity:.45}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:12px}
+.scanbox .btn.big{margin-bottom:10px}
+.manual{display:flex;gap:8px}
+.manual input{flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff}
+/* 數字磚 */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 13px;cursor:pointer;text-align:left;color:var(--txt)}
+.tile .k{font-size:13.5px;color:var(--mut)}
+.tile .v{font-size:30px;font-weight:800;line-height:1.15}
+.tile .v small{font-size:14px;font-weight:600;color:var(--mut);margin-left:3px}
+.tile.sm .v{font-size:22px}
+.tile.bad{background:var(--badbg);border-color:#f1b9b3}.tile.bad .v{color:var(--bad)}
+.tile.warn{background:var(--warnbg);border-color:#f3d9a4}.tile.warn .v{color:var(--warn)}
+.tile.yel .v{color:var(--yel)}
+/* 區域卡片 */
+details.sec{background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+details.sec>summary{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 15px;font-size:16px;font-weight:700;color:var(--pri-dark);list-style:none;cursor:pointer}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:'▸';color:var(--mut);font-size:15px;transition:transform .15s}
+details.sec[open]>summary::before{transform:rotate(90deg)}
+details.sec>summary .r{margin-left:auto;font-weight:400;font-size:13px;color:var(--mut)}
+details.sec .body{padding:0 15px 10px}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:20px;padding:1px 8px;line-height:1.6;white-space:nowrap}
+.tag.bad{background:var(--badbg);color:var(--bad)}
+.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.yel{background:var(--yelbg);color:var(--yel)}
+.tag.ok{background:var(--okbg);color:var(--ok)}
+.tag.no{background:#eef0f2;color:var(--mut)}
+.it{display:flex;align-items:center;gap:10px;padding:9px 2px;border-top:1px solid #f0e8e6;cursor:pointer}
+.it:first-child{border-top:none}
+.it .nm{flex:1;min-width:0;font-size:14.5px}
+.it .bc{white-space:nowrap;font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:5px;vertical-align:1px}
+.it .rt{text-align:right;flex-shrink:0;font-size:13px}
+.it .qn{font-weight:700;font-size:14px}
+.it .qn.low{color:var(--bad)}
+.it.s-exp{background:linear-gradient(90deg,var(--badbg),transparent 70%)}
+.it.s-d30{background:linear-gradient(90deg,var(--warnbg),transparent 70%)}
+.log{font-size:13.5px}
+.log div{padding:5px 0;border-top:1px solid #f0e8e6}
+.log div:first-child{border-top:none}
+.log .t{color:var(--mut);margin-right:6px;font-variant-numeric:tabular-nums}
+.codes div{display:flex;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #f0e8e6;font-size:13.5px}
+.codes div:first-child{border-top:none}
+.codes code{font-size:12.5px;color:var(--mut)}
+.codes .n{flex:1;min-width:0}
+footer{font-size:12px;color:var(--mut);text-align:center;padding:10px 0 0}
+/* 掃描畫面 */
+#scan{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column}
+#scan.on{display:flex}
+#scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#scan .frame{position:absolute;left:50%;top:44%;width:min(72vw,320px);height:min(46vw,210px);transform:translate(-50%,-50%);border:3px solid rgba(255,255,255,.9);border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.35)}
+#scan .frame.hit{border-color:#4cd964}
+#scan .bar{position:relative;z-index:2;display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;color:#fff}
+#scan .bar b{font-size:17px;flex:1}
+#scan .sbtn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:8px 14px;font-size:15px}
+#scan .bot{position:absolute;left:0;right:0;bottom:0;z-index:2;display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 16px calc(22px + env(safe-area-inset-bottom))}
+#scan .st{color:#fff;font-size:15px;text-align:center;min-height:22px;text-shadow:0 1px 3px #000}
+#scan .row{display:flex;gap:10px}
+/* 底部彈出視窗 */
+.mask{position:fixed;inset:0;background:rgba(20,10,10,.45);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:760px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.sheet h2{font-size:18px;margin:0 0 2px;line-height:1.4}
+.sheet .sub{font-size:13px;color:var(--mut);margin-bottom:10px}
+.sheet .acts{display:flex;gap:10px;margin-top:14px}
+.sheet .acts .btn{flex:1;padding:11px 10px;font-size:16px}
+.found{border-radius:10px;padding:9px 12px;margin:8px 0 12px;font-size:14.5px;background:#eef6ff;border:1px solid #c9ddf5;color:#1d4f86}
+.found b{font-weight:700}
+.found.match{background:var(--okbg);border-color:#b9e2c8;color:var(--ok)}
+.qline{display:flex;align-items:center;gap:8px;margin:4px 0 8px;font-size:14.5px}
+.qline b{font-size:17px}
+.bt{border:1px solid var(--line);border-radius:11px;padding:9px 10px;margin-bottom:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:end}
+.bt.hl{border-color:#5aa0e6;box-shadow:0 0 0 2px #cfe3fa}
+.bt.s-exp{background:var(--badbg)}
+.bt.s-d30{background:var(--warnbg)}
+.bt label{display:flex;flex-direction:column;font-size:12.5px;color:var(--mut);gap:2px;min-width:0}
+.bt input[type=date],.bt input[type=text]{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;width:100%;min-width:0;color:var(--txt);min-height:38px}
+.bt .stp{display:flex;align-items:center;gap:6px}
+.bt .stp button{width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:20px;line-height:1;color:var(--pri)}
+.bt .stp input{width:58px;text-align:center;border:1px solid var(--line);border-radius:8px;padding:6px 4px;font-weight:700;font-size:16px}
+.bt .del{justify-self:end;background:none;border:none;color:var(--mut);font-size:14px;padding:6px 4px}
+.bt.ne{grid-template-columns:1fr auto}
+.chk{display:flex;align-items:center;gap:8px;font-size:14.5px;margin:10px 0 4px}
+.chk input{width:20px;height:20px}
+.blist .grp{font-size:13px;font-weight:700;color:var(--pri-dark);margin:12px 0 2px}
+.search{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin:6px 0 4px}
+.cbound{font-size:13px;color:var(--mut);margin-top:12px}
+.cbound div{display:flex;align-items:center;gap:8px;padding:3px 0}
+.cbound code{flex:1;min-width:0;word-break:break-all}
+/* 確認框、提示 */
+.dlg{background:#fff;width:calc(100% - 32px);max-width:420px;border-radius:14px;padding:18px 18px 14px;margin:auto}
+.mask.center{align-items:center}
+.dlg .msg{font-size:15.5px;line-height:1.6;word-break:break-word}
+.dlg .msg b{color:var(--pri-dark)}
+.dlg .acts{display:flex;gap:10px;margin-top:16px}
+.dlg .acts .btn{flex:1;padding:10px}
+#toast{position:fixed;left:50%;bottom:calc(26px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(30,30,30,.92);color:#fff;border-radius:22px;padding:9px 18px;font-size:14.5px;z-index:90;display:none;max-width:calc(100% - 40px);text-align:center}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><h1>急救車管理</h1></div></header>
+<main class="wrap" id="app"></main>
+
+<div id="scan">
+  <video id="vid" playsinline muted autoplay></video>
+  <div class="frame" id="frame"></div>
+  <div class="bar"><b>掃描條碼</b><button class="sbtn" id="torch" style="display:none">手電筒</button><button class="sbtn" data-act="scanClose">關閉</button></div>
+  <div class="bot">
+    <div class="st" id="scanSt"></div>
+    <div class="row"><button class="sbtn" data-act="photo">拍照掃描</button></div>
+  </div>
+</div>
+<input type="file" id="photo" accept="image/*" capture="environment" style="display:none">
+<div id="sheetHost"></div>
+<div id="dlgHost"></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+const VERSION='0.1.0';
+const LS_KEY='erCart_data';
+const LIB_URL='https://cdn.jsdelivr.net/npm/barcode-detector@3.2.2/dist/iife/ponyfill.js';
+const AREAS=['桌面','第一層抽屜（急救藥物）','第二層抽屜','第三層抽屜（小兒急救用品組）','第四層抽屜','側面'];
+const DEF_ITEMS=[{"id":"c01","s":"桌面","name":"Ambu Bag＋Mask＋O2 雙接管（床頭處）","q":"1"},{"id":"c02","s":"桌面","name":"Endo 7.0／7.5 Fr","q":"各1"},{"id":"c03","s":"桌面","name":"喉頭鏡柄＋葉片 3.0／4.0 Fr（亮度正常）","q":"各2","ne":1},{"id":"c04","s":"桌面","name":"Bite（大）／Airway（80／90／100mm）","q":"各1"},{"id":"c05","s":"桌面","name":"通條、10cc 空針","q":"各1"},{"id":"c06","s":"桌面","name":"Endo 固定帶","q":"4"},{"id":"c07","s":"桌面","name":"Jelly、筆燈、瞳孔尺","q":"各1"},{"id":"c08","s":"桌面","name":"無菌手套 6.5／7.0／7.5 號","q":"各1"},{"id":"c09","s":"桌面","name":"EMMA-ETCO2","q":"1","ne":1},{"id":"c10","s":"桌面","name":"備用電池 2 號、3 號、4 號、9V","q":"各4"},{"id":"c11","s":"桌面","name":"張口器（鐵製）","q":"1","ne":1},{"id":"c12","s":"桌面","name":"托舌鉗 大／小","q":"各1","ne":1},{"id":"c13","s":"桌面","name":"大 Kelly（彎）","q":"1","ne":1},{"id":"c14","s":"桌面","name":"感染垃圾袋（放急救盤下）","q":"1","ne":1},{"id":"c15","s":"第一層抽屜（急救藥物）","name":"*Adenosine／Adenocor（6mg/2ml/vial）","q":"5"},{"id":"c16","s":"第一層抽屜（急救藥物）","name":"*Amiodarone／Cordarone（150mg/3ml/amp）","q":"6"},{"id":"c17","s":"第一層抽屜（急救藥物）","name":"*Dopamine（200mg/5ml/amp）","q":"4"},{"id":"c18","s":"第一層抽屜（急救藥物）","name":"*Epinephrine（1mg/1ml/amp）","q":"30"},{"id":"c19","s":"第一層抽屜（急救藥物）","name":"*Glucose 50%／Vitagen（10g/20ml/amp）","q":"4"},{"id":"c20","s":"第一層抽屜（急救藥物）","name":"*MgSO4（2000mg/20ml/amp）","q":"1"},{"id":"c21","s":"第一層抽屜（急救藥物）","name":"*Midazolam／Midatin（5mg/1ml/amp）","q":"2"},{"id":"c22","s":"第一層抽屜（急救藥物）","name":"*Succinylcholine（500mg/vial）","q":"1"},{"id":"c23","s":"第一層抽屜（急救藥物）","name":"*Norepinephrine／Levophed（4mg/4ml/vial）","q":"4"},{"id":"c24","s":"第一層抽屜（急救藥物）","name":"*Rocuronium（50mg/5ml/vial）","q":"2"},{"id":"c25","s":"第一層抽屜（急救藥物）","name":"Verapamil（5mg/2ml/amp）","q":"2"},{"id":"c26","s":"第一層抽屜（急救藥物）","name":"Atropine（1mg/1ml/amp）","q":"2"},{"id":"c27","s":"第一層抽屜（急救藥物）","name":"Calcium Chloride／Vitacal（5.44mEq/20ml/amp）","q":"2"},{"id":"c28","s":"第一層抽屜（急救藥物）","name":"Chlorpheniramine（5mg/1ml/amp）","q":"2"},{"id":"c29","s":"第一層抽屜（急救藥物）","name":"Furosemide／Rosis（20mg/2ml/amp）","q":"10"},{"id":"c30","s":"第一層抽屜（急救藥物）","name":"Methylprednisolone／BELON（40mg/vial）","q":"2"},{"id":"c31","s":"第一層抽屜（急救藥物）","name":"Nitroglycerin／Nitrostat（0.6mg/tab）（NTG）","q":"1"},{"id":"c32","s":"第一層抽屜（急救藥物）","name":"Salbutamol／Saldolin（5mg/2.5ml/amp）","q":"2"},{"id":"c33","s":"第一層抽屜（急救藥物）","name":"Sodium Bicarbonate（1400mg/20ml/amp）","q":"20"},{"id":"c34","s":"第一層抽屜（急救藥物）","name":"Phenytoin／Aleviatin（250mg/5ml/amp）","q":"4"},{"id":"c35","s":"第二層抽屜","name":"Bite 大","q":"3"},{"id":"c36","s":"第二層抽屜","name":"心肌長針","q":"3"},{"id":"c37","s":"第二層抽屜","name":"Nasal Airway 6.0／6.5／7.0／7.5","q":"各1"},{"id":"c38","s":"第二層抽屜","name":"Oral Airway 80／90／100mm","q":"各2"},{"id":"c39","s":"第二層抽屜","name":"Endo Tube 6.0／6.5／7.0／7.5／8.0 號","q":"各2"},{"id":"c40","s":"第二層抽屜","name":"硬式抽吸管 大","q":"1"},{"id":"c41","s":"第二層抽屜","name":"通條","q":"2"},{"id":"c42","s":"第三層抽屜（小兒急救用品組）","name":"葉片可與成人喉頭鏡柄卡榫密合","q":"1","ne":1},{"id":"c43","s":"第三層抽屜（小兒急救用品組）","name":"直－喉頭鏡葉片 0#（亮度正常）","q":"1","ne":1},{"id":"c44","s":"第三層抽屜（小兒急救用品組）","name":"直－喉頭鏡葉片 1#（亮度正常）","q":"1","ne":1},{"id":"c45","s":"第三層抽屜（小兒急救用品組）","name":"彎－喉頭鏡葉片 0#（亮度正常）","q":"1","ne":1},{"id":"c46","s":"第三層抽屜（小兒急救用品組）","name":"彎－喉頭鏡葉片 1#（亮度正常）","q":"1","ne":1},{"id":"c47","s":"第三層抽屜（小兒急救用品組）","name":"彎－喉頭鏡葉片 2#（亮度正常）","q":"2","ne":1},{"id":"c48","s":"第三層抽屜（小兒急救用品組）","name":"喉頭鏡葉片 3#（亮度正常）","q":"1","ne":1},{"id":"c49","s":"第三層抽屜（小兒急救用品組）","name":"Oral Airway 40／50／60／70mm","q":"各1"},{"id":"c50","s":"第三層抽屜（小兒急救用品組）","name":"Bite 小","q":"2"},{"id":"c51","s":"第三層抽屜（小兒急救用品組）","name":"小兒急救尺","q":"1","ne":1},{"id":"c52","s":"第三層抽屜（小兒急救用品組）","name":"小兒 Ambu Bag＋Mask＋O2 雙接管","q":"1"},{"id":"c53","s":"第三層抽屜（小兒急救用品組）","name":"LMA 1.5／2.0","q":"各1"},{"id":"c54","s":"第三層抽屜（小兒急救用品組）","name":"Endo Tube 4.5／5.0／5.5 號（有 cuff）","q":"各1"},{"id":"c55","s":"第三層抽屜（小兒急救用品組）","name":"Endo Tube 3.0／3.5／4.0 號（無 cuff）","q":"各1"},{"id":"c56","s":"第三層抽屜（小兒急救用品組）","name":"小兒胃管 10／12 號","q":"各1"},{"id":"c57","s":"第三層抽屜（小兒急救用品組）","name":"硬式抽吸管 小","q":"1"},{"id":"c58","s":"第三層抽屜（小兒急救用品組）","name":"小兒通條","q":"2"},{"id":"c59","s":"第四層抽屜","name":"電子喉頭鏡","q":"1","ne":1},{"id":"c60","s":"第四層抽屜","name":"電子喉頭鏡鏡葉","q":"3"},{"id":"c61","s":"第四層抽屜","name":"電動骨針電鑽","q":"1","ne":1},{"id":"c62","s":"第四層抽屜","name":"骨針 45mm","q":"2"},{"id":"c63","s":"第四層抽屜","name":"骨針 25mm","q":"2"},{"id":"c64","s":"第四層抽屜","name":"骨針 15mm","q":"1"},{"id":"c65","s":"第四層抽屜","name":"LMA 3.0／4.0","q":"各1"},{"id":"c66","s":"第四層抽屜","name":"防護裝備","q":"1組"},{"id":"c67","s":"側面","name":"聽診器（右邊）","q":"2","ne":1},{"id":"c68","s":"側面","name":"急救板（急救車背面）","q":"1","ne":1},{"id":"c69","s":"側面","name":"N95 口罩","q":"5"},{"id":"c70","s":"側面","name":"i-Bougie（橘色）／S-guide（透明黃）","q":"各2"},{"id":"c71","s":"側面","name":"小兒血氧線","q":"1","ne":1},{"id":"c72","s":"側面","name":"小兒壓脈帶","q":"1","ne":1}];
+
+/* ---------- 資料 ---------- */
+let DB=load();
+function load(){
+  let d=null;
+  try{ d=JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){}
+  if(!d||!Array.isArray(d.items)) d={v:1,items:DEF_ITEMS.map(x=>Object.assign({},x)),codes:{},stock:{},log:[]};
+  d.codes=d.codes||{}; d.stock=d.stock||{}; d.log=d.log||[];
+  return d;
+}
+function save(){
+  try{ localStorage.setItem(LS_KEY,JSON.stringify(DB)); return true; }
+  catch(e){ toast('存不進這台裝置（儲存空間被關閉？）'); return false; }
+}
+function addLog(id,x){ DB.log.unshift({t:Date.now(),i:id,x:x}); if(DB.log.length>300) DB.log.length=300; }
+const itemById=id=>DB.items.find(i=>i.id===id);
+
+/* ---------- 小工具 ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function daysTo(ds){ const t=new Date(todayStr()+'T00:00:00'), d=new Date(ds+'T00:00:00'); return Math.round((d-t)/864e5); }
+const fmtD=ds=>ds?ds.replace(/-/g,'/'):'';
+function fmtT(ts){ const d=new Date(ts); return pad(d.getMonth()+1)+'/'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes()); }
+const isD=s=>/^\d{4}-\d{2}-\d{2}$/.test(s||'');
+let toastT=0;
+function toast(m,ms){ const t=$('#toast'); t.textContent=m; t.style.display='block'; clearTimeout(toastT); toastT=setTimeout(()=>t.style.display='none',ms||2600); }
+function ask(html,ok,cancel){
+  return new Promise(res=>{
+    const h=$('#dlgHost');
+    h.innerHTML='<div class="mask center"><div class="dlg"><div class="msg">'+html+'</div><div class="acts"><button class="btn ghost" data-r="0">'+esc(cancel||'取消')+'</button><button class="btn" data-r="1">'+esc(ok||'確定')+'</button></div></div></div>';
+    h.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ h.innerHTML=''; res(b.dataset.r==='1'); });
+  });
+}
+
+/* ---------- 效期狀態 ---------- */
+function qNum(q){ return /^\d+$/.test(String(q||'').trim())?+q:null; }
+function stat(it){
+  const rows=(DB.stock[it.id]||[]).filter(r=>r.n>0);
+  const set=DB.stock[it.id]!==undefined;
+  const total=rows.reduce((a,r)=>a+r.n,0);
+  let first='';
+  if(!it.ne) rows.forEach(r=>{ if(isD(r.e)&&(!first||r.e<first)) first=r.e; });
+  const dd=first?daysTo(first):null;
+  let s='';
+  if(!it.ne){
+    if(first&&dd<0) s='exp'; else if(first&&dd<=30) s='d30'; else if(first&&dd<=90) s='d90';
+  }
+  const noExp=!it.ne&&(!rows.length||rows.some(r=>!isD(r.e)));
+  const qn=qNum(it.q);
+  const low=set&&qn!=null&&total<qn;
+  return {rows,set,total,first,dd,s,noExp,low};
+}
+function expTag(st){
+  if(!st.first) return '';
+  if(st.s==='exp') return '<span class="tag bad">'+fmtD(st.first)+' 已過期</span>';
+  if(st.s==='d30') return '<span class="tag warn">'+fmtD(st.first)+'・剩 '+st.dd+' 天</span>';
+  if(st.s==='d90') return '<span class="tag yel">'+fmtD(st.first)+'</span>';
+  return '<span class="tag ok">'+fmtD(st.first)+'</span>';
+}
+function codesOf(id){ return Object.keys(DB.codes).filter(k=>DB.codes[k]===id); }
+
+/* ---------- 首頁 ---------- */
+const openSec=new Set();
+function render(){
+  const all=DB.items.map(it=>({it,st:stat(it)}));
+  const cnt=f=>all.filter(f).length;
+  const nExp=cnt(x=>x.st.s==='exp'), n30=cnt(x=>x.st.s==='d30'), n90=cnt(x=>x.st.s==='d90');
+  const nLow=cnt(x=>x.st.low), nNo=cnt(x=>x.st.noExp), nBound=cnt(x=>codesOf(x.it.id).length>0);
+  let h='<div class="card scanbox"><button class="btn big" data-act="scan">📷 掃描條碼</button>'+
+    '<div class="manual"><input id="manual" type="text" inputmode="text" autocomplete="off" placeholder="條碼號碼（掃描槍／手動輸入）" enterkeyhint="search"><button class="btn outline" data-act="manual">查詢</button></div></div>';
+  h+='<div class="tiles">'+
+    tile('exp','已過期',nExp,'項',nExp?'bad':'')+
+    tile('d30','30 天內到期',n30,'項',n30?'warn':'')+
+    tile('d90','90 天內到期',n90,'項',n90?'yel':'','sm')+
+    tile('low','數量不足',nLow,'項',nLow?'bad':'','sm')+
+    tile('noexp','還沒填效期',nNo,'項','','sm')+
+    tile('bound','已對應條碼',nBound,'／'+DB.items.length,'','sm')+'</div>';
+  const areas=AREAS.slice(); DB.items.forEach(i=>{ if(areas.indexOf(i.s)<0) areas.push(i.s); });
+  areas.forEach(a=>{
+    const xs=all.filter(x=>x.it.s===a); if(!xs.length) return;
+    const e=xs.filter(x=>x.st.s==='exp').length, w=xs.filter(x=>x.st.s==='d30').length, l=xs.filter(x=>x.st.low).length;
+    h+='<details class="sec" data-sec="'+esc(a)+'"'+(openSec.has(a)?' open':'')+'><summary>'+esc(a)+
+      (e?' <span class="tag bad">過期 '+e+'</span>':'')+(w?' <span class="tag warn">30 天內 '+w+'</span>':'')+(l?' <span class="tag bad">不足 '+l+'</span>':'')+
+      '<span class="r">'+xs.length+' 項</span></summary><div class="body">'+xs.map(itemRow).join('')+'</div></details>';
+  });
+  // 異動紀錄
+  const lg=DB.log.slice(0,60);
+  h+='<details class="sec" data-sec="_log"'+(openSec.has('_log')?' open':'')+'><summary>異動紀錄<span class="r">'+DB.log.length+' 筆</span></summary><div class="body log">'+
+    (lg.length?lg.map(x=>{ const it=itemById(x.i); return '<div><span class="t">'+fmtT(x.t)+'</span>'+(it?'<b>'+esc(it.name)+'</b>　':'')+esc(x.x)+'</div>'; }).join(''):'<div class="mut">還沒有紀錄</div>')+'</div></details>';
+  // 條碼對應
+  const ck=Object.keys(DB.codes);
+  h+='<details class="sec" data-sec="_codes"'+(openSec.has('_codes')?' open':'')+'><summary>條碼對應<span class="r">'+ck.length+' 個條碼</span></summary><div class="body codes">'+
+    (ck.length?ck.map(k=>{ const it=itemById(DB.codes[k]); return '<div><span class="n">'+esc(it?it.name:'（已刪除的品項）')+'<br><code>'+esc(k)+'</code></span><button class="btn ghost mini" data-act="unbind" data-code="'+esc(k)+'">解除</button></div>'; }).join(''):'<div class="mut">還沒有條碼</div>')+'</div></details>';
+  h+='<footer>本機版 v'+VERSION+'・資料只存在這台裝置</footer>';
+  $('#app').innerHTML=h;
+  $('#app').querySelectorAll('details.sec').forEach(d=>d.addEventListener('toggle',()=>{ d.open?openSec.add(d.dataset.sec):openSec.delete(d.dataset.sec); }));
+  const mi=$('#manual'); mi.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); doManual(); } });
+}
+function tile(k,label,v,unit,cls,sm){
+  return '<button class="tile '+(sm||'')+' '+(cls||'')+'" data-act="tile" data-k="'+k+'"><div class="k">'+label+'</div><div class="v">'+v+'<small>'+unit+'</small></div></button>';
+}
+function itemRow(x){
+  const it=x.it, st=x.st, qn=qNum(it.q);
+  const qtxt=st.set?'<span class="qn'+(st.low?' low':'')+'">'+st.total+'</span><span class="mut">／'+esc(it.q||'—')+'</span>':'<span class="mut">—／'+esc(it.q||'—')+'</span>';
+  let sub='';
+  if(!it.ne){ sub=st.first?expTag(st):(st.set&&!st.rows.length?'':'<span class="tag no">未填效期</span>'); }
+  return '<div class="it'+(st.s?' s-'+st.s:'')+'" data-act="item" data-id="'+it.id+'"><div class="nm">'+esc(it.name)+(codesOf(it.id).length?'<span class="bc">條碼</span>':'')+'</div>'+
+    '<div class="rt">'+qtxt+(sub?'<div>'+sub+'</div>':'')+'</div></div>';
+}
+
+/* ---------- 底部視窗 ---------- */
+let SH=null; // 目前開著的視窗 {type,...}
+function closeSheet(){ SH=null; $('#sheetHost').innerHTML=''; render(); }
+function showSheet(html){
+  $('#sheetHost').innerHTML='<div class="mask" id="mask"><div class="sheet" id="sheet">'+html+'</div></div>';
+}
+
+// 數字磚點下去：列出那些品項
+function tileSheet(k){
+  const T={exp:'已過期',d30:'30 天內到期',d90:'90 天內到期',low:'數量不足',noexp:'還沒填效期',bound:'已對應條碼'};
+  const xs=DB.items.map(it=>({it,st:stat(it)})).filter(x=>
+    k==='exp'?x.st.s==='exp':k==='d30'?x.st.s==='d30':k==='d90'?x.st.s==='d90':k==='low'?x.st.low:k==='noexp'?x.st.noExp:codesOf(x.it.id).length>0);
+  xs.sort((a,b)=>(a.st.first||'9')<(b.st.first||'9')?-1:1);
+  SH={type:'list'};
+  showSheet('<h2>'+T[k]+'</h2><div class="sub">'+xs.length+' 項</div>'+
+    (xs.length?xs.map(x=>itemRow(x)).join(''):'<div class="mut" style="padding:10px 0">沒有</div>')+
+    '<div class="acts"><button class="btn ghost" data-act="close">關閉</button></div>');
+}
+
+/* ---------- 品項：看效期／數量，改完按儲存 ---------- */
+let ED=null; // 編輯中的草稿
+function openItem(id,scan){
+  const it=itemById(id); if(!it) return;
+  const rows=(DB.stock[id]||[]).map(r=>({e:r.e||'',l:r.l||'',n:r.n||0}));
+  ED={id,rows,ne:!!it.ne,scan:scan||null,dirty:false,match:-1};
+  if(scan&&scan.exp){
+    const i=rows.findIndex(r=>r.e===scan.exp&&(!scan.lot||!r.l||r.l===scan.lot));
+    if(i>=0){ ED.match=i; rows[i].hl=1; }
+    else { rows.push({e:scan.exp,l:scan.lot||'',n:1,hl:1}); ED.dirty=true; }
+  }
+  SH={type:'item'};
+  drawItem();
+}
+function drawItem(){
+  const it=itemById(ED.id), sc=ED.scan;
+  let h='<h2>'+esc(it.name)+'</h2><div class="sub">'+esc(it.s)+'・設定量 '+esc(it.q||'—')+'</div>';
+  if(sc){
+    const info=[sc.exp?'效期 <b>'+fmtD(sc.exp)+'</b>':'',sc.lot?'批號 <b>'+esc(sc.lot)+'</b>':''].filter(Boolean).join('・');
+    h+='<div class="found'+(ED.match>=0?' match':'')+'">'+(ED.match>=0?'✓ 這一批已登記：':'掃到：')+(info||'條碼（沒有效期資料）')+'</div>';
+  }
+  const tot=ED.rows.reduce((a,r)=>a+(+r.n||0),0);
+  h+='<div class="qline">現有 <b>'+tot+'</b> <span class="mut">／ 設定量 '+esc(it.q||'—')+'</span></div>';
+  h+=ED.rows.map((r,i)=>batchRow(r,i)).join('');
+  h+='<button class="btn outline" data-act="addRow" style="width:100%">＋ 新增一批</button>';
+  h+='<label class="chk"><input type="checkbox" id="neChk"'+(ED.ne?' checked':'')+'> 不用管效期</label>';
+  const cs=codesOf(ED.id);
+  if(cs.length) h+='<div class="cbound">對應的條碼'+cs.map(c=>'<div><code>'+esc(c)+'</code><button class="btn ghost mini" data-act="unbind" data-code="'+esc(c)+'">解除</button></div>').join('')+'</div>';
+  h+='<div class="acts"><button class="btn ghost" data-act="close">關閉</button><button class="btn" data-act="saveItem"'+(ED.dirty?'':' disabled')+'>儲存</button></div>';
+  const sc0=$('#sheet')?$('#sheet').scrollTop:0;
+  showSheet(h);
+  $('#sheet').scrollTop=sc0;
+}
+function batchRow(r,i){
+  let cls='bt'+(r.hl?' hl':'')+(ED.ne?' ne':'');
+  if(!ED.ne&&isD(r.e)){ const d=daysTo(r.e); if(d<0) cls+=' s-exp'; else if(d<=30) cls+=' s-d30'; }
+  const stp='<div class="stp"><button data-act="dec" data-i="'+i+'">−</button><input type="number" inputmode="numeric" min="0" data-f="n" data-i="'+i+'" value="'+(+r.n||0)+'"><button data-act="inc" data-i="'+i+'">＋</button></div>';
+  if(ED.ne) return '<div class="'+cls+'">'+stp+'<button class="del" data-act="delRow" data-i="'+i+'">移除</button></div>';
+  return '<div class="'+cls+'"><label>效期<input type="date" data-f="e" data-i="'+i+'" value="'+esc(r.e)+'"></label><label>批號<input type="text" data-f="l" data-i="'+i+'" value="'+esc(r.l)+'" autocomplete="off"></label>'+
+    stp+'<button class="del" data-act="delRow" data-i="'+i+'">移除</button></div>';
+}
+function markDirty(){ ED.dirty=true; const b=document.querySelector('[data-act=saveItem]'); if(b) b.disabled=false; }
+function sumTxt(rows,ne){
+  const tot=rows.reduce((a,r)=>a+r.n,0);
+  if(ne||!rows.length) return '共 '+tot;
+  return '共 '+tot+'（'+rows.map(r=>(r.e?fmtD(r.e):'未填效期')+(r.l?' 批號'+r.l:'')+' ×'+r.n).join('、')+'）';
+}
+async function saveItem(){
+  const it=itemById(ED.id);
+  const rows=ED.rows.map(r=>({e:ED.ne?'':(r.e||''),l:ED.ne?'':String(r.l||'').trim(),n:Math.max(0,parseInt(r.n,10)||0)})).filter(r=>r.n>0);
+  if(!ED.ne&&rows.some(r=>!r.e)){ if(!await ask('有一批<b>沒填效期</b>，還是要儲存嗎？','照樣儲存')) return; }
+  rows.sort((a,b)=>(a.e||'9')<(b.e||'9')?-1:(a.e||'9')>(b.e||'9')?1:0);
+  const txt=sumTxt(rows,ED.ne);
+  if(!await ask('儲存「<b>'+esc(it.name)+'</b>」<br>'+esc(txt)+(ED.ne!==!!it.ne?'<br>'+(ED.ne?'改成不用管效期':'改成要管效期'):''),'儲存')) return;
+  DB.stock[ED.id]=rows;
+  if(ED.ne!==!!it.ne){ if(ED.ne) it.ne=1; else delete it.ne; }
+  addLog(ED.id,'儲存：'+txt);
+  if(save()){ toast('已儲存'); ED=null; closeSheet(); }
+}
+
+/* ---------- 不認得的條碼：選它是哪一項 ---------- */
+let BIND=null;
+function openBind(p){
+  BIND=p; SH={type:'bind'};
+  const info=[p.exp?'效期 <b>'+fmtD(p.exp)+'</b>':'',p.lot?'批號 <b>'+esc(p.lot)+'</b>':''].filter(Boolean).join('・');
+  showSheet('<h2>這個條碼是哪一項？</h2><div class="found">條碼 <b>'+esc(p.key)+'</b>'+(info?'<br>'+info:'')+'</div>'+
+    '<input class="search" id="bsearch" type="search" placeholder="搜尋品項" autocomplete="off"><div class="blist" id="blist"></div>'+
+    '<div class="acts"><button class="btn ghost" data-act="close">取消</button></div>');
+  drawBindList('');
+  $('#bsearch').addEventListener('input',e=>drawBindList(e.target.value));
+}
+function drawBindList(q){
+  q=String(q||'').trim().toLowerCase();
+  const areas=AREAS.slice(); DB.items.forEach(i=>{ if(areas.indexOf(i.s)<0) areas.push(i.s); });
+  let h='';
+  areas.forEach(a=>{
+    const xs=DB.items.filter(i=>i.s===a&&(!q||i.name.toLowerCase().indexOf(q)>=0)); if(!xs.length) return;
+    h+='<div class="grp">'+esc(a)+'</div>'+xs.map(it=>'<div class="it" data-act="bindTo" data-id="'+it.id+'"><div class="nm">'+esc(it.name)+(codesOf(it.id).length?'<span class="bc">條碼</span>':'')+'</div></div>').join('');
+  });
+  $('#blist').innerHTML=h||'<div class="mut" style="padding:10px 0">找不到</div>';
+}
+async function bindTo(id){
+  const it=itemById(id), p=BIND;
+  if(!await ask('把條碼 <b>'+esc(p.key)+'</b><br>設為「<b>'+esc(it.name)+'</b>」？','設定')) return;
+  DB.codes[p.key]=id; addLog(id,'條碼 '+p.key+' 對應到這一項');
+  if(!save()) return;
+  BIND=null; openItem(id,p);
+}
+async function unbind(code){
+  const it=itemById(DB.codes[code]);
+  if(!await ask('解除條碼 <b>'+esc(code)+'</b>'+(it?'<br>（目前對應「'+esc(it.name)+'」）':'')+'？','解除')) return;
+  delete DB.codes[code]; if(it) addLog(it.id,'解除條碼 '+code);
+  save(); toast('已解除');
+  if(SH&&SH.type==='item') drawItem(); else render();
+}
+
+/* ---------- 條碼解析（GS1：01 商品碼、17 效期、10 批號、21 序號） ---------- */
+const AI_FIX={'00':18,'01':14,'02':14,'11':6,'12':6,'13':6,'15':6,'16':6,'17':6,'20':2};
+const AI_VAR2={'10':1,'21':1,'22':1,'30':1,'37':1,'90':1,'91':1,'92':1,'93':1,'94':1,'95':1,'96':1,'97':1,'98':1,'99':1};
+function parseGS1(s){
+  s=String(s||'').replace(/^\][A-Za-z]\d/,'').replace(/<GS>|\{GS\}|\[GS\]/gi,'\x1d').trim();
+  const o={};
+  if(/^\(\d{2,4}\)/.test(s)){
+    const re=/\((\d{2,4})\)([^(]*)/g; let m;
+    while((m=re.exec(s))) o[m[1]]=m[2].replace(/\x1d/g,'').trim();
+    return o;
+  }
+  s=s.replace(/^\x1d+/,'');
+  let i=0, g=0;
+  while(i<s.length&&g++<30){
+    const a2=s.substr(i,2), a3=s.substr(i,3), a4=s.substr(i,4);
+    if(AI_FIX[a2]){ o[a2]=s.substr(i+2,AI_FIX[a2]); i+=2+AI_FIX[a2]; }
+    else if(AI_VAR2[a2]){ let j=s.indexOf('\x1d',i+2); if(j<0) j=s.length; o[a2]=s.slice(i+2,j); i=j; }
+    else if(/^(24[0-3]|25[0-4]|71[0-9])$/.test(a3)){ let j=s.indexOf('\x1d',i+3); if(j<0) j=s.length; o[a3]=s.slice(i+3,j); i=j; }
+    else if(a4==='7003'){ o[a4]=s.substr(i+4,10); i+=14; }
+    else break;
+    while(s[i]==='\x1d') i++;
+  }
+  // 沒有分隔字元時，批號可能把後面的效期吃進去（…10ABC12317271231）
+  if(o['10']&&!o['17']){ const m=o['10'].match(/^(.*)17(\d{6})$/); if(m&&m[1]){ o['10']=m[1]; o['17']=m[2]; } }
+  return o;
+}
+function gs1Date(v){
+  if(!/^\d{6}$/.test(v||'')) return '';
+  const y=2000+(+v.slice(0,2)), m=+v.slice(2,4); let d=+v.slice(4,6);
+  if(m<1||m>12) return '';
+  if(d===0) d=new Date(y,m,0).getDate();   // 日＝00 代表那個月最後一天
+  return y+'-'+pad(m)+'-'+pad(d);
+}
+function gtinOk(g){
+  if(!/^\d{14}$/.test(g)) return false;
+  let s=0; for(let i=0;i<13;i++) s+=(+g[i])*(i%2?1:3);
+  return (10-s%10)%10===+g[13];
+}
+function parseCode(raw,fmt){
+  const s=String(raw||'').replace(/[\r\n]+/g,'').trim();
+  const p={raw:s,fmt:fmt||'',gtin:'',exp:'',lot:'',key:''};
+  const g=parseGS1(s);
+  if(g['01']&&/^\d{14}$/.test(g['01'])&&(gtinOk(g['01'])||/^\(|^\]|\x1d/.test(s))){
+    p.gs1=1; p.gtin=g['01']; p.lot=(g['10']||'').trim(); p.exp=gs1Date(g['17']||(g['7003']||'').slice(0,6));
+  } else if(/^(\d{8}|\d{12,14})$/.test(s)){
+    p.gtin=s.padStart(14,'0');   // EAN-13／UPC／EAN-8 補成 14 碼，和 2D 條碼裡的商品碼一致
+  }
+  p.key=p.gtin||s;
+  return p;
+}
+
+/* ---------- 掃到之後 ---------- */
+function handleCode(p){
+  if(!p||!p.key){ toast('沒有讀到條碼'); return; }
+  const id=DB.codes[p.key];
+  if(id&&itemById(id)) openItem(id,p); else openBind(p);
+}
+function doManual(){
+  const v=$('#manual').value.trim(); if(!v) return;
+  $('#manual').value=''; $('#manual').blur();
+  handleCode(parseCode(v,'manual'));
+}
+
+/* ---------- 相機掃描 ---------- */
+const FORMATS=['data_matrix','ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','qr_code','databar','databar_expanded'];
+let detector=null, stream=null, scanning=false, cand=null, candAt=0, actx=null, torchOn=false;
+function loadScript(src){
+  return new Promise((ok,no)=>{ const s=document.createElement('script'); s.src=src; s.onload=ok; s.onerror=()=>no(new Error('load')); document.head.appendChild(s); });
+}
+async function getDetector(){
+  if(detector) return detector;
+  if('BarcodeDetector' in window){
+    try{
+      const sup=await window.BarcodeDetector.getSupportedFormats();
+      if(sup.indexOf('data_matrix')>=0&&sup.indexOf('ean_13')>=0){ detector=new window.BarcodeDetector({formats:FORMATS.filter(f=>sup.indexOf(f)>=0)}); return detector; }
+    }catch(e){}
+  }
+  if(!window.BarcodeDetectionAPI) await loadScript(LIB_URL);
+  const API=window.BarcodeDetectionAPI;
+  try{ await API.prepareZXingModule({fireImmediately:true}); }catch(e){}
+  detector=new API.BarcodeDetector({formats:FORMATS});
+  return detector;
+}
+function unlockAudio(){ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
+function beep(){
+  try{ const o=actx.createOscillator(), g=actx.createGain(); o.type='sine'; o.frequency.value=1600; g.gain.value=.18; o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+.12); }catch(e){}
+  try{ navigator.vibrate&&navigator.vibrate(70); }catch(e){}
+}
+function scanSt(t){ $('#scanSt').textContent=t||''; }
+async function openScan(){
+  unlockAudio();
+  cand=null; torchOn=false;
+  $('#scan').classList.add('on'); $('#frame').classList.remove('hit'); $('#torch').style.display='none';
+  scanSt('開啟相機…');
+  const detP=getDetector().catch(e=>null);
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia) throw new Error('nocam');
+    stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}});
+  }catch(e){
+    scanSt(e&&e.name==='NotAllowedError'?'相機權限被拒絕，可改用「拍照掃描」':'相機打不開，可改用「拍照掃描」');
+    return;
+  }
+  if(!$('#scan').classList.contains('on')){ stopStream(); return; }
+  const v=$('#vid'); v.srcObject=stream;
+  try{ await v.play(); }catch(e){}
+  try{
+    const tr=stream.getVideoTracks()[0], caps=tr.getCapabilities?tr.getCapabilities():{};
+    if(caps.torch) $('#torch').style.display='';
+    if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0) tr.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+  }catch(e){}
+  scanSt('載入掃描程式…');
+  const det=await detP;
+  if(!det){ scanSt('掃描程式載入失敗（網路？）'); return; }
+  if(!$('#scan').classList.contains('on')) return;
+  scanSt('');
+  scanning=true; tick();
+}
+async function tick(){
+  if(!scanning) return;
+  const v=$('#vid');
+  if(v.readyState>=2&&v.videoWidth){
+    try{ onDetect(await detector.detect(v)); }catch(e){}
+  }
+  if(scanning) setTimeout(tick,110);
+}
+function onDetect(list){
+  const now=Date.now();
+  if(list&&list.length){
+    const ps=list.map(d=>parseCode(d.rawValue,d.format)).filter(p=>p.key);
+    const best=ps.find(p=>p.exp)||ps.find(p=>p.gs1)||ps[0];
+    if(best){
+      $('#frame').classList.add('hit');
+      if(best.exp||DB.codes[best.key]&&best.gs1){ accept(best); return; }
+      // 一盒常同時有一維條碼和 2D 條碼：再等一下，看能不能讀到有效期的那個
+      if(!cand||(!cand.gs1&&best.gs1)){ cand=best; if(!candAt) candAt=now; }
+    }
+  }
+  if(cand&&now-candAt>800) accept(cand);
+}
+function accept(p){
+  scanning=false; cand=null; candAt=0;
+  beep(); closeScan();
+  handleCode(p);
+}
+function stopStream(){ try{ if(stream) stream.getTracks().forEach(t=>t.stop()); }catch(e){} stream=null; const v=$('#vid'); if(v) v.srcObject=null; }
+function closeScan(){ scanning=false; cand=null; candAt=0; stopStream(); $('#scan').classList.remove('on'); }
+async function toggleTorch(){
+  try{ const tr=stream.getVideoTracks()[0]; torchOn=!torchOn; await tr.applyConstraints({advanced:[{torch:torchOn}]}); }catch(e){ toast('這支手機不支援'); }
+}
+async function scanFile(file){
+  if(!file) return;
+  const inScan=$('#scan').classList.contains('on');
+  if(inScan) scanSt('辨識中…'); else toast('辨識中…',8000);
+  try{
+    const det=await getDetector();
+    let src=file;
+    try{
+      const bmp=await createImageBitmap(file);
+      const k=Math.min(1,2400/Math.max(bmp.width,bmp.height));
+      const c=document.createElement('canvas'); c.width=Math.round(bmp.width*k); c.height=Math.round(bmp.height*k);
+      c.getContext('2d').drawImage(bmp,0,0,c.width,c.height); src=c;
+    }catch(e){}
+    const list=await det.detect(src);
+    const ps=(list||[]).map(d=>parseCode(d.rawValue,d.format)).filter(p=>p.key);
+    const best=ps.find(p=>p.exp)||ps.find(p=>p.gs1)||ps[0];
+    if(!best){ if(inScan) scanSt('這張照片找不到條碼，再拍一次'); else toast('這張照片找不到條碼'); return; }
+    $('#toast').style.display='none';
+    accept(best);
+  }catch(e){ if(inScan) scanSt('辨識失敗'); else toast('辨識失敗'); }
+}
+document.addEventListener('visibilitychange',()=>{ if(document.hidden&&$('#scan').classList.contains('on')) closeScan(); });
+
+/* ---------- 事件 ---------- */
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const a=el.dataset.act;
+  if(a==='scan') openScan();
+  else if(a==='scanClose') closeScan();
+  else if(a==='photo'){ unlockAudio(); $('#photo').value=''; $('#photo').click(); }
+  else if(a==='manual') doManual();
+  else if(a==='tile') tileSheet(el.dataset.k);
+  else if(a==='item'){ openItem(el.dataset.id); }
+  else if(a==='close'){
+    if(SH&&SH.type==='item'&&ED&&ED.dirty&&!await ask('還沒儲存，<b>放棄修改</b>？','放棄修改','繼續編輯')) return;
+    ED=null; BIND=null; closeSheet();
+  }
+  else if(a==='addRow'){ ED.rows.push({e:'',l:'',n:1,hl:1}); markDirty(); drawItem(); }
+  else if(a==='delRow'){ ED.rows.splice(+el.dataset.i,1); markDirty(); drawItem(); }
+  else if(a==='inc'||a==='dec'){ const r=ED.rows[+el.dataset.i]; r.n=Math.max(0,(parseInt(r.n,10)||0)+(a==='inc'?1:-1)); markDirty(); drawItem(); }
+  else if(a==='saveItem') saveItem();
+  else if(a==='bindTo') bindTo(el.dataset.id);
+  else if(a==='unbind') unbind(el.dataset.code);
+});
+$('#torch').addEventListener('click',toggleTorch);
+$('#photo').addEventListener('change',e=>scanFile(e.target.files&&e.target.files[0]));
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(!ED||t.dataset.f==null) return;
+  const r=ED.rows[+t.dataset.i]; if(!r) return;
+  if(t.dataset.f==='n') r.n=t.value; else r[t.dataset.f]=t.value;
+  markDirty();
+  if(t.dataset.f==='e'){ const q=document.querySelector('.qline b'); if(q) q.textContent=ED.rows.reduce((a,r)=>a+(+r.n||0),0); }
+  if(t.dataset.f==='n'){ const q=document.querySelector('.qline b'); if(q) q.textContent=ED.rows.reduce((a,r)=>a+(+r.n||0),0); }
+});
+document.addEventListener('change',e=>{
+  const t=e.target;
+  if(t.id==='neChk'&&ED){ ED.ne=t.checked; markDirty(); drawItem(); return; }
+  if(t.dataset&&t.dataset.f==='e'&&ED) drawItem();
+});
+window.addEventListener('beforeunload',e=>{ if(ED&&ED.dirty){ e.preventDefault(); e.returnValue=''; } });
+
+render();
+</script>
+</body>
+</html>

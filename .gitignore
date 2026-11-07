@@ -1,0 +1,6 @@
+# 本機測試用，不上傳
+_*.html
+_*.js
+*.bak
+desktop.ini
+Thumbs.db
