@@ -80,6 +80,8 @@ details.sec .body{padding:0 15px 10px}
 .codes div:first-child{border-top:none}
 .codes code{font-size:12.5px;color:var(--mut)}
 .codes .n{flex:1;min-width:0}
+.note{border-radius:9px;padding:9px 13px;font-size:14px;margin-bottom:12px}
+.note.warn{background:var(--warnbg);color:var(--warn);border:1px solid #f3d9a4}
 footer{font-size:12px;color:var(--mut);text-align:center;padding:10px 0 0}
 /* 掃描畫面 */
 #scan{position:fixed;inset:0;background:#000;z-index:50;display:none;flex-direction:column}
@@ -153,26 +155,126 @@ footer{font-size:12px;color:var(--mut);text-align:center;padding:10px 0 0}
 
 <script>
 'use strict';
-const VERSION='0.1.0';
-const LS_KEY='erCart_data';
+const VERSION='0.2.0';
 const LIB_URL='https://cdn.jsdelivr.net/npm/barcode-detector@3.2.2/dist/iife/ponyfill.js';
 const AREAS=['桌面','第一層抽屜（急救藥物）','第二層抽屜','第三層抽屜（小兒急救用品組）','第四層抽屜','側面'];
 const DEF_ITEMS=[{"id":"c01","s":"桌面","name":"Ambu Bag＋Mask＋O2 雙接管（床頭處）","q":"1"},{"id":"c02","s":"桌面","name":"Endo 7.0／7.5 Fr","q":"各1"},{"id":"c03","s":"桌面","name":"喉頭鏡柄＋葉片 3.0／4.0 Fr（亮度正常）","q":"各2","ne":1},{"id":"c04","s":"桌面","name":"Bite（大）／Airway（80／90／100mm）","q":"各1"},{"id":"c05","s":"桌面","name":"通條、10cc 空針","q":"各1"},{"id":"c06","s":"桌面","name":"Endo 固定帶","q":"4"},{"id":"c07","s":"桌面","name":"Jelly、筆燈、瞳孔尺","q":"各1"},{"id":"c08","s":"桌面","name":"無菌手套 6.5／7.0／7.5 號","q":"各1"},{"id":"c09","s":"桌面","name":"EMMA-ETCO2","q":"1","ne":1},{"id":"c10","s":"桌面","name":"備用電池 2 號、3 號、4 號、9V","q":"各4"},{"id":"c11","s":"桌面","name":"張口器（鐵製）","q":"1","ne":1},{"id":"c12","s":"桌面","name":"托舌鉗 大／小","q":"各1","ne":1},{"id":"c13","s":"桌面","name":"大 Kelly（彎）","q":"1","ne":1},{"id":"c14","s":"桌面","name":"感染垃圾袋（放急救盤下）","q":"1","ne":1},{"id":"c15","s":"第一層抽屜（急救藥物）","name":"*Adenosine／Adenocor（6mg/2ml/vial）","q":"5"},{"id":"c16","s":"第一層抽屜（急救藥物）","name":"*Amiodarone／Cordarone（150mg/3ml/amp）","q":"6"},{"id":"c17","s":"第一層抽屜（急救藥物）","name":"*Dopamine（200mg/5ml/amp）","q":"4"},{"id":"c18","s":"第一層抽屜（急救藥物）","name":"*Epinephrine（1mg/1ml/amp）","q":"30"},{"id":"c19","s":"第一層抽屜（急救藥物）","name":"*Glucose 50%／Vitagen（10g/20ml/amp）","q":"4"},{"id":"c20","s":"第一層抽屜（急救藥物）","name":"*MgSO4（2000mg/20ml/amp）","q":"1"},{"id":"c21","s":"第一層抽屜（急救藥物）","name":"*Midazolam／Midatin（5mg/1ml/amp）","q":"2"},{"id":"c22","s":"第一層抽屜（急救藥物）","name":"*Succinylcholine（500mg/vial）","q":"1"},{"id":"c23","s":"第一層抽屜（急救藥物）","name":"*Norepinephrine／Levophed（4mg/4ml/vial）","q":"4"},{"id":"c24","s":"第一層抽屜（急救藥物）","name":"*Rocuronium（50mg/5ml/vial）","q":"2"},{"id":"c25","s":"第一層抽屜（急救藥物）","name":"Verapamil（5mg/2ml/amp）","q":"2"},{"id":"c26","s":"第一層抽屜（急救藥物）","name":"Atropine（1mg/1ml/amp）","q":"2"},{"id":"c27","s":"第一層抽屜（急救藥物）","name":"Calcium Chloride／Vitacal（5.44mEq/20ml/amp）","q":"2"},{"id":"c28","s":"第一層抽屜（急救藥物）","name":"Chlorpheniramine（5mg/1ml/amp）","q":"2"},{"id":"c29","s":"第一層抽屜（急救藥物）","name":"Furosemide／Rosis（20mg/2ml/amp）","q":"10"},{"id":"c30","s":"第一層抽屜（急救藥物）","name":"Methylprednisolone／BELON（40mg/vial）","q":"2"},{"id":"c31","s":"第一層抽屜（急救藥物）","name":"Nitroglycerin／Nitrostat（0.6mg/tab）（NTG）","q":"1"},{"id":"c32","s":"第一層抽屜（急救藥物）","name":"Salbutamol／Saldolin（5mg/2.5ml/amp）","q":"2"},{"id":"c33","s":"第一層抽屜（急救藥物）","name":"Sodium Bicarbonate（1400mg/20ml/amp）","q":"20"},{"id":"c34","s":"第一層抽屜（急救藥物）","name":"Phenytoin／Aleviatin（250mg/5ml/amp）","q":"4"},{"id":"c35","s":"第二層抽屜","name":"Bite 大","q":"3"},{"id":"c36","s":"第二層抽屜","name":"心肌長針","q":"3"},{"id":"c37","s":"第二層抽屜","name":"Nasal Airway 6.0／6.5／7.0／7.5","q":"各1"},{"id":"c38","s":"第二層抽屜","name":"Oral Airway 80／90／100mm","q":"各2"},{"id":"c39","s":"第二層抽屜","name":"Endo Tube 6.0／6.5／7.0／7.5／8.0 號","q":"各2"},{"id":"c40","s":"第二層抽屜","name":"硬式抽吸管 大","q":"1"},{"id":"c41","s":"第二層抽屜","name":"通條","q":"2"},{"id":"c42","s":"第三層抽屜（小兒急救用品組）","name":"葉片可與成人喉頭鏡柄卡榫密合","q":"1","ne":1},{"id":"c43","s":"第三層抽屜（小兒急救用品組）","name":"直－喉頭鏡葉片 0#（亮度正常）","q":"1","ne":1},{"id":"c44","s":"第三層抽屜（小兒急救用品組）","name":"直－喉頭鏡葉片 1#（亮度正常）","q":"1","ne":1},{"id":"c45","s":"第三層抽屜（小兒急救用品組）","name":"彎－喉頭鏡葉片 0#（亮度正常）","q":"1","ne":1},{"id":"c46","s":"第三層抽屜（小兒急救用品組）","name":"彎－喉頭鏡葉片 1#（亮度正常）","q":"1","ne":1},{"id":"c47","s":"第三層抽屜（小兒急救用品組）","name":"彎－喉頭鏡葉片 2#（亮度正常）","q":"2","ne":1},{"id":"c48","s":"第三層抽屜（小兒急救用品組）","name":"喉頭鏡葉片 3#（亮度正常）","q":"1","ne":1},{"id":"c49","s":"第三層抽屜（小兒急救用品組）","name":"Oral Airway 40／50／60／70mm","q":"各1"},{"id":"c50","s":"第三層抽屜（小兒急救用品組）","name":"Bite 小","q":"2"},{"id":"c51","s":"第三層抽屜（小兒急救用品組）","name":"小兒急救尺","q":"1","ne":1},{"id":"c52","s":"第三層抽屜（小兒急救用品組）","name":"小兒 Ambu Bag＋Mask＋O2 雙接管","q":"1"},{"id":"c53","s":"第三層抽屜（小兒急救用品組）","name":"LMA 1.5／2.0","q":"各1"},{"id":"c54","s":"第三層抽屜（小兒急救用品組）","name":"Endo Tube 4.5／5.0／5.5 號（有 cuff）","q":"各1"},{"id":"c55","s":"第三層抽屜（小兒急救用品組）","name":"Endo Tube 3.0／3.5／4.0 號（無 cuff）","q":"各1"},{"id":"c56","s":"第三層抽屜（小兒急救用品組）","name":"小兒胃管 10／12 號","q":"各1"},{"id":"c57","s":"第三層抽屜（小兒急救用品組）","name":"硬式抽吸管 小","q":"1"},{"id":"c58","s":"第三層抽屜（小兒急救用品組）","name":"小兒通條","q":"2"},{"id":"c59","s":"第四層抽屜","name":"電子喉頭鏡","q":"1","ne":1},{"id":"c60","s":"第四層抽屜","name":"電子喉頭鏡鏡葉","q":"3"},{"id":"c61","s":"第四層抽屜","name":"電動骨針電鑽","q":"1","ne":1},{"id":"c62","s":"第四層抽屜","name":"骨針 45mm","q":"2"},{"id":"c63","s":"第四層抽屜","name":"骨針 25mm","q":"2"},{"id":"c64","s":"第四層抽屜","name":"骨針 15mm","q":"1"},{"id":"c65","s":"第四層抽屜","name":"LMA 3.0／4.0","q":"各1"},{"id":"c66","s":"第四層抽屜","name":"防護裝備","q":"1組"},{"id":"c67","s":"側面","name":"聽診器（右邊）","q":"2","ne":1},{"id":"c68","s":"側面","name":"急救板（急救車背面）","q":"1","ne":1},{"id":"c69","s":"側面","name":"N95 口罩","q":"5"},{"id":"c70","s":"側面","name":"i-Bougie（橘色）／S-guide（透明黃）","q":"各2"},{"id":"c71","s":"側面","name":"小兒血氧線","q":"1","ne":1},{"id":"c72","s":"側面","name":"小兒壓脈帶","q":"1","ne":1}];
 
-/* ---------- 資料 ---------- */
-let DB=load();
-function load(){
-  let d=null;
-  try{ d=JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){}
-  if(!d||!Array.isArray(d.items)) d={v:1,items:DEF_ITEMS.map(x=>Object.assign({},x)),codes:{},stock:{},log:[]};
-  d.codes=d.codes||{}; d.stock=d.stock||{}; d.log=d.log||[];
-  return d;
+/* ---------- 雲端（Firebase REST，匿名登入；與其他急診 App 同一個資料庫） ----------
+   erCrashCartData/
+     stock/<品項>   = {r:[{e:效期,l:批號,n:數量}], at, dev}   儲存時整筆蓋過
+     codes/<條碼>   = {k:條碼原字串, i:品項, at, dev}          （條碼裡的 . # $ [ ] / 會編碼）
+     ne/<品項>      = true／false                              不用管效期（和預設不同才寫）
+     log/<id>       = {t, i, x, dev}                           異動紀錄                          */
+const FB_DB='https://tenchener-488d2-default-rtdb.firebaseio.com', NODE='erCrashCartData';
+const FB_API_KEY='AIzaSyB6w2D8gaqSBHoDmtWsWGWGY-DQtDEcyFY';   // Firebase Web API key：本來就設計成公開內嵌，不是密碼
+const LS={cache:'erCart_cache',out:'erCart_out',rt:'erCart_rt',dev:'erCart_dev',old:'erCart_data',mig:'erCart_mig'};
+function lsGet(k,d){ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+const DEV=(()=>{ let d=lsGet(LS.dev,''); if(!d){ d=Math.random().toString(36).slice(2,10); lsSet(LS.dev,d); } return d; })();
+let _tok=null,_tokExp=0,_tokP=null;
+async function idToken(force){
+  if(!force&&_tok&&Date.now()<_tokExp) return _tok;
+  if(_tokP&&!force) return _tokP;
+  _tokP=(async()=>{
+    const keep=d=>{ _tok=d.idToken||d.id_token; _tokExp=Date.now()+(Number(d.expiresIn||d.expires_in||3600)-60)*1000;
+      const rt=d.refreshToken||d.refresh_token; if(rt) lsSet(LS.rt,rt); return _tok; };
+    const rt=lsGet(LS.rt,null);
+    if(rt){ const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${FB_API_KEY}`,{method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(rt)});
+      if(r.ok) return keep(await r.json()); }
+    const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB_API_KEY}`,{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})});
+    if(!r.ok) throw new Error('雲端登入失敗（HTTP '+r.status+'）');
+    return keep(await r.json());
+  })();
+  try{ return await _tokP; } finally{ _tokP=null; }
 }
-function save(){
-  try{ localStorage.setItem(LS_KEY,JSON.stringify(DB)); return true; }
-  catch(e){ toast('存不進這台裝置（儲存空間被關閉？）'); return false; }
+async function fb(method,path,body,q){
+  for(let i=0;;i++){
+    const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),12000);
+    let r;
+    try{ r=await fetch(`${FB_DB}/${NODE}${path?'/'+path.split('/').map(encodeURIComponent).join('/'):''}.json?auth=${encodeURIComponent(await idToken(i>0))}${q||''}`,
+      {method,cache:'no-store',signal:ac.signal,body:body===undefined?undefined:JSON.stringify(body)}); }
+    finally{ clearTimeout(tm); }
+    if(r.ok) return r.json();
+    const msg=await r.text().catch(()=>'');
+    if((r.status===401||r.status===403)&&i===0&&/expired|invalid|token/i.test(msg)) continue;   // 憑證過期：重拿一次
+    if(r.status===401||r.status===403) throw Object.assign(new Error('雲端規則尚未開放'),{kind:'denied'});
+    throw new Error('雲端回應 HTTP '+r.status);
+  }
 }
-function addLog(id,x){ DB.log.unshift({t:Date.now(),i:id,x:x}); if(DB.log.length>300) DB.log.length=300; }
+// 這支手機上的雲端副本＋還沒上傳成功的寫入（沒網路、雲端還沒開通都能用，連上後自動補傳）
+let db=lsGet(LS.cache,{});
+let outbox=lsGet(LS.out,[]);
+const cloud={st:'idle',at:0};
+const getAt=path=>path.split('/').reduce((o,k)=>o&&typeof o==='object'?o[k]:undefined,db);
+function setAt(path,val){
+  const ks=path.split('/'); let o=db;
+  for(let i=0;i<ks.length-1;i++){ if(!o[ks[i]]||typeof o[ks[i]]!=='object') o[ks[i]]={}; o=o[ks[i]]; }
+  if(val==null) delete o[ks[ks.length-1]]; else o[ks[ks.length-1]]=val;
+}
+const encKey=k=>String(k).replace(/[%.#$\[\]\/\x00-\x1f\x7f]/g,c=>'%'+c.charCodeAt(0).toString(16).toUpperCase().padStart(2,'0'));
+async function pull(path,q){
+  try{
+    const v=await fb('GET',path,undefined,q);
+    setAt(path,v);
+    outbox.forEach(o=>{ if(o.p===path||o.p.startsWith(path+'/')) setAt(o.p,o.b); });   // 還沒傳上去的，蓋回本機副本
+    cloud.st='ok'; cloud.at=Date.now(); lsSet(LS.cache,db);
+    return true;
+  }catch(e){ cloud.st=e.kind==='denied'?'denied':'off'; return false; }
+}
+function write(path,body){
+  setAt(path,body);
+  outbox=outbox.filter(o=>o.p!==path);   // 同一個位置改了又改只留最後一筆
+  outbox.push({p:path,b:body==null?null:body,t:Date.now()}); lsSet(LS.out,outbox); lsSet(LS.cache,db);
+  derive();
+}
+let _flushing=false;
+async function flush(fromWrite){
+  if(_flushing||!outbox.length) return; _flushing=true;
+  try{
+    while(outbox.length){ const o=outbox[0]; await fb(o.b==null?'DELETE':'PUT',o.p,o.b==null?undefined:o.b); outbox.shift(); lsSet(LS.out,outbox); }
+    cloud.st='ok'; cloud.at=Date.now();
+  }catch(e){
+    cloud.st=e.kind==='denied'?'denied':'off';
+    if(fromWrite) toast(cloud.st==='denied'?'雲端還沒開通，先存在這支手機':'沒有網路，先存在這支手機，連上後自動上傳');
+  }finally{ _flushing=false; if(!typing()) render(); }
+}
+async function pullAll(){
+  if(document.hidden) return;
+  const r=await Promise.all([pull('stock'),pull('codes'),pull('ne'),pull('log','&orderBy=%22%24key%22&limitToLast=200')]);
+  if(r.every(Boolean)) migrateOld();
+  derive();
+  if(outbox.length) await flush(); else if(!typing()) render();
+}
+const typing=()=>{ const a=document.activeElement; return !!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.closest('#app')); };
+
+/* ---------- 畫面用的資料（由雲端副本算出來） ---------- */
+const DB={items:[],codes:{},stock:{},log:[]};
+const toArr=v=>Array.isArray(v)?v.filter(Boolean):v&&typeof v==='object'?Object.keys(v).sort((a,b)=>a-b).map(k=>v[k]).filter(Boolean):[];
+function derive(){
+  const ne=db.ne||{};
+  DB.items=DEF_ITEMS.map(x=>{ const o=Object.assign({},x); if(ne[x.id]===true) o.ne=1; else if(ne[x.id]===false) delete o.ne; return o; });
+  DB.codes={}; Object.keys(db.codes||{}).forEach(k=>{ const c=db.codes[k]; if(c&&c.k&&c.i) DB.codes[c.k]=c.i; });
+  DB.stock={}; Object.keys(db.stock||{}).forEach(id=>{ const s=db.stock[id]; if(s) DB.stock[id]=toArr(s.r).map(r=>({e:r.e||'',l:r.l||'',n:+r.n||0})); });
+  DB.log=Object.keys(db.log||{}).map(k=>db.log[k]).filter(x=>x&&x.t).sort((a,b)=>b.t-a.t);
+}
+function addLog(id,x){
+  const t=Date.now(), k=t.toString(36)+Math.random().toString(36).slice(2,6);
+  write('log/'+k,{t,i:id,x,dev:DEV});
+}
+// v0.1 本機版存在這支手機的資料：第一次連上雲端時補傳（雲端已經有的那一項不蓋過去）；原資料留著不刪
+function migrateOld(){
+  if(lsGet(LS.mig,0)) return;
+  const old=lsGet(LS.old,null); lsSet(LS.mig,1);
+  if(!old||typeof old!=='object') return;
+  const at=Date.now(); let n=0;
+  Object.keys(old.codes||{}).forEach(k=>{ if(!getAt('codes/'+encKey(k))){ write('codes/'+encKey(k),{k,i:old.codes[k],at,dev:DEV}); n++; } });
+  Object.keys(old.stock||{}).forEach(id=>{ if(!getAt('stock/'+id)){ write('stock/'+id,{r:(old.stock[id]||[]).map(r=>({e:r.e||'',l:r.l||'',n:+r.n||0})),at,dev:DEV}); n++; } });
+  (old.items||[]).forEach(it=>{ const d=DEF_ITEMS.find(x=>x.id===it.id); if(d&&!!d.ne!==!!it.ne&&getAt('ne/'+it.id)===undefined){ write('ne/'+it.id,!!it.ne); n++; } });
+  if(n) (old.log||[]).forEach((l,i)=>{ if(l&&l.t) write('log/'+l.t.toString(36)+'m'+i,{t:l.t,i:l.i,x:l.x,dev:DEV}); });
+}
 const itemById=id=>DB.items.find(i=>i.id===id);
 
 /* ---------- 小工具 ---------- */
@@ -228,7 +330,10 @@ function render(){
   const cnt=f=>all.filter(f).length;
   const nExp=cnt(x=>x.st.s==='exp'), n30=cnt(x=>x.st.s==='d30'), n90=cnt(x=>x.st.s==='d90');
   const nLow=cnt(x=>x.st.low), nNo=cnt(x=>x.st.noExp), nBound=cnt(x=>codesOf(x.it.id).length>0);
-  let h='<div class="card scanbox"><button class="btn big" data-act="scan">📷 掃描條碼</button>'+
+  let h='';
+  if(cloud.st==='denied') h+='<div class="note warn">雲端還沒開通，資料先存在這支手機</div>';
+  else if(cloud.st==='off') h+='<div class="note warn">連不上雲端，顯示的是上次的資料'+(outbox.length?'；'+outbox.length+' 筆還沒上傳':'')+'</div>';
+  h+='<div class="card scanbox"><button class="btn big" data-act="scan">📷 掃描條碼</button>'+
     '<div class="manual"><input id="manual" type="text" inputmode="text" autocomplete="off" placeholder="條碼號碼（掃描槍／手動輸入）" enterkeyhint="search"><button class="btn outline" data-act="manual">查詢</button></div></div>';
   h+='<div class="tiles">'+
     tile('exp','已過期',nExp,'項',nExp?'bad':'')+
@@ -253,7 +358,7 @@ function render(){
   const ck=Object.keys(DB.codes);
   h+='<details class="sec" data-sec="_codes"'+(openSec.has('_codes')?' open':'')+'><summary>條碼對應<span class="r">'+ck.length+' 個條碼</span></summary><div class="body codes">'+
     (ck.length?ck.map(k=>{ const it=itemById(DB.codes[k]); return '<div><span class="n">'+esc(it?it.name:'（已刪除的品項）')+'<br><code>'+esc(k)+'</code></span><button class="btn ghost mini" data-act="unbind" data-code="'+esc(k)+'">解除</button></div>'; }).join(''):'<div class="mut">還沒有條碼</div>')+'</div></details>';
-  h+='<footer>本機版 v'+VERSION+'・資料只存在這台裝置</footer>';
+  h+='<footer>v'+VERSION+'・'+(cloud.st==='ok'?'雲端同步 '+fmtT(cloud.at).slice(6):cloud.st==='idle'?'連線中…':'未同步')+(outbox.length?'・'+outbox.length+' 筆待上傳':'')+'</footer>';
   $('#app').innerHTML=h;
   $('#app').querySelectorAll('details.sec').forEach(d=>d.addEventListener('toggle',()=>{ d.open?openSec.add(d.dataset.sec):openSec.delete(d.dataset.sec); }));
   const mi=$('#manual'); mi.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); doManual(); } });
@@ -294,7 +399,7 @@ let ED=null; // 編輯中的草稿
 function openItem(id,scan){
   const it=itemById(id); if(!it) return;
   const rows=(DB.stock[id]||[]).map(r=>({e:r.e||'',l:r.l||'',n:r.n||0}));
-  ED={id,rows,ne:!!it.ne,scan:scan||null,dirty:false,match:-1};
+  ED={id,rows,ne:!!it.ne,scan:scan||null,dirty:false,match:-1,base:(getAt('stock/'+id)||{}).at||0};
   if(scan&&scan.exp){
     const i=rows.findIndex(r=>r.e===scan.exp&&(!scan.lot||!r.l||r.l===scan.lot));
     if(i>=0){ ED.match=i; rows[i].hl=1; }
@@ -343,10 +448,20 @@ async function saveItem(){
   rows.sort((a,b)=>(a.e||'9')<(b.e||'9')?-1:(a.e||'9')>(b.e||'9')?1:0);
   const txt=sumTxt(rows,ED.ne);
   if(!await ask('儲存「<b>'+esc(it.name)+'</b>」<br>'+esc(txt)+(ED.ne!==!!it.ne?'<br>'+(ED.ne?'改成不用管效期':'改成要管效期'):''),'儲存')) return;
-  DB.stock[ED.id]=rows;
-  if(ED.ne!==!!it.ne){ if(ED.ne) it.ne=1; else delete it.ne; }
+  // 打開之後別台手機也改了這一項：先問要不要蓋過去
+  await pull('stock/'+ED.id);
+  const cur=getAt('stock/'+ED.id);
+  if(cur&&(cur.at||0)!==ED.base&&cur.dev!==DEV){
+    derive();
+    const n=(DB.stock[ED.id]||[]).reduce((a,r)=>a+r.n,0);
+    if(!await ask('別台手機在 <b>'+fmtT(cur.at)+'</b> 改過這一項（現在共 '+n+'）。<br>要用你這次的內容<b>蓋過去</b>嗎？','蓋過去','先看最新的')){
+      const sc=ED.scan, id=ED.id; ED=null; openItem(id,sc); return;
+    }
+  }
+  write('stock/'+ED.id,{r:rows,at:Date.now(),dev:DEV});
+  if(ED.ne!==!!it.ne){ const d=DEF_ITEMS.find(x=>x.id===ED.id); write('ne/'+ED.id,d&&!!d.ne===ED.ne?null:ED.ne); }
   addLog(ED.id,'儲存：'+txt);
-  if(save()){ toast('已儲存'); ED=null; closeSheet(); }
+  toast('已儲存'); ED=null; closeSheet(); flush(true);
 }
 
 /* ---------- 不認得的條碼：選它是哪一項 ---------- */
@@ -373,15 +488,15 @@ function drawBindList(q){
 async function bindTo(id){
   const it=itemById(id), p=BIND;
   if(!await ask('把條碼 <b>'+esc(p.key)+'</b><br>設為「<b>'+esc(it.name)+'</b>」？','設定')) return;
-  DB.codes[p.key]=id; addLog(id,'條碼 '+p.key+' 對應到這一項');
-  if(!save()) return;
+  write('codes/'+encKey(p.key),{k:p.key,i:id,at:Date.now(),dev:DEV}); addLog(id,'條碼 '+p.key+' 對應到這一項');
+  flush(true);
   BIND=null; openItem(id,p);
 }
 async function unbind(code){
   const it=itemById(DB.codes[code]);
   if(!await ask('解除條碼 <b>'+esc(code)+'</b>'+(it?'<br>（目前對應「'+esc(it.name)+'」）':'')+'？','解除')) return;
-  delete DB.codes[code]; if(it) addLog(it.id,'解除條碼 '+code);
-  save(); toast('已解除');
+  write('codes/'+encKey(code),null); if(it) addLog(it.id,'解除條碼 '+code);
+  flush(true); toast('已解除');
   if(SH&&SH.type==='item') drawItem(); else render();
 }
 
@@ -596,7 +711,10 @@ document.addEventListener('change',e=>{
 });
 window.addEventListener('beforeunload',e=>{ if(ED&&ED.dirty){ e.preventDefault(); e.returnValue=''; } });
 
-render();
+derive(); render();
+pullAll(); setInterval(pullAll,20000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) pullAll(); });
+window.addEventListener('online',pullAll);
 </script>
 </body>
 </html>
