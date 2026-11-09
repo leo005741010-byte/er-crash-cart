@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script>/* iPhone 防放大（全 App 統一，主任 2026-10-17）：iPhone／iPad 點輸入框不自動放大，兩指放大照常；Android 不加 maximum-scale（會連兩指放大都鎖掉） */
+(function(){var m=document.querySelector('meta[name=viewport]');if(m&&(/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))&&m.content.indexOf('maximum-scale')<0)m.content+=',maximum-scale=1';})();</script>
+<style>html,body,*{touch-action:manipulation}/* 連點兩下不放大，兩指放大照常 */</style>
 <meta name="robots" content="noindex,nofollow">
-<title>衛材管理・後台</title>
+<meta http-equiv="refresh" content="0;url=../er-shift-check/manage.html">
+<title>急診點班・衛材管理</title>
+<script>location.replace('../er-shift-check/manage.html');</script>
 </head>
-<body>
-<script>
-// 後台入口：嵌在急診點班管理頁的「衛材管理」那一頁。載入和 index.html 同一份程式，先設 MANAGE（不用登入、只看不改）。
-fetch('index.html',{cache:'no-store'}).then(function(r){ if(!r.ok) throw 0; return r.text(); }).then(function(t){
-  t=t.replace('<head>','<head><script>window.MANAGE=true<\/script>').replace('<link rel="manifest" href="manifest.json">','').replace('<title>衛材管理</title>','<title>衛材管理・後台</title>');
-  document.open(); document.write(t); document.close();
-}).catch(function(){ document.body.textContent='載入失敗，請確認網路後重新整理。'; });
-</script>
+<body style="font-family:'Microsoft JhengHei','PingFang TC',sans-serif;padding:24px;color:#1f2d3d">
+<!-- 2026-11-09 衛材管理已併入急診點班（er-shift-check）：這個網址只剩轉址，舊的主畫面捷徑點了會自動過去 -->
+衛材管理已併入急診點班，正在前往… <a href="../er-shift-check/manage.html">急診點班</a>
 </body>
 </html>
